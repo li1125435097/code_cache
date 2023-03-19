@@ -1,0 +1,32 @@
+l = console.log
+r = (p) -> l Reflect.ownKeys(p)
+
+
+main = (app) ->
+    routers = app._router.stack
+    results = []
+    routers.map (v) -> 
+        if v.name is 'router'
+            prefix = getPrefix(v)
+            v.handle.stack.map (v1) ->
+                {path,stack,methods} = v1.route ? {}
+                stack = stack && stack.map (v3) -> v3.name
+
+                results.push {type:'路由',url:prefix+String(path||'').slice(1).replace(/\//g,'\\'),method:methods&&Object.keys(methods).join(),func:stack?.join()||v1.name}
+                # l(prefix+String(path).slice(1),stack,methods)
+                # methods || l(prefix,v1)
+        else
+            # l('中间件',v.name,v.handle.toString().split(' {')[0])
+            results.push {type:'中间件',name:v.name,func:v.handle.toString().split('{')[0]}
+    # l(routers[58].handle.stack[0])
+    l(results)
+
+getPrefix = (route) ->
+    return route.regexp.toString().split('\/').slice(2,-3).join('').split('^').pop()
+
+module.exports = main
+
+
+
+//ia = require "./ia"
+//ia(app)
